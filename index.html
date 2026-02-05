@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTT 手機控制器安裝</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; text-align: center; }
+        .box { border: 2px dashed #333; padding: 20px; margin: 20px 0; background: #f9f9f9; word-break: break-all;}
+        h2 { color: #005599; }
+    </style>
+</head>
+<body>
+    <h1>PTT 手機虛擬搖桿</h1>
+    <p>適用於 term.ptt.cc 的手機版外掛</p>
+
+    <h2>安裝方式</h2>
+    <p>請複製下方框框內的程式碼，並修改手機瀏覽器的書籤網址：</p>
+    
+    <div class="box" id="code-box">
+        </div>
+
+    <script>
+        // 設定你的 GitHub 帳號與 Repo 名稱
+        // ==========================================
+        const githubUser = 'a23644910';  // <--- 請改成你的 ID
+        const repoName = 'ptt-controller';    // <--- 你的 Repo 名稱
+        // ==========================================
+
+        const scriptUrl = `https://${githubUser}.github.io/${repoName}/controller.js`;
+        
+        // 這是「載入器」程式碼，加上 timestamp 防止快取
+        const bookmarkletCode = `javascript:(function(){var s=document.createElement('script');s.src='${scriptUrl}?t='+new Date().getTime();document.body.appendChild(s);})();`;
+
+        document.getElementById('code-box').innerText = bookmarkletCode;
+    </script>
+</body>
+</html>
