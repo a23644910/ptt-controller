@@ -3,141 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTT 手機控制器安裝</title>
+    <title>PTT 工具安裝</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; text-align: center; }
-        .box { border: 2px dashed #333; padding: 20px; margin: 20px 0; background: #f9f9f9; word-break: break-all;}
-        h2 { color: #005599; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+        h2 { margin-top: 0; color: #333; }
+        input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #0084ff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:active { background: #0066cc; }
+        textarea { width: 90%; height: 100px; margin-top: 15px; padding: 10px; border: 2px dashed #0084ff; border-radius: 8px; font-size: 14px; color: #555; word-break: break-all; }
+        .note { font-size: 12px; color: #666; margin-top: 15px; text-align: left; }
     </style>
 </head>
 <body>
-    <h1>PTT 手機虛擬搖桿</h1>
-    <p>適用於 term.ptt.cc 的手機版外掛</p>
 
-    <h2>安裝方式</h2>
-    <p>請複製下方框框內的程式碼，並修改手機瀏覽器的書籤網址：</p>
+<div class="card">
+    <h2>PTT 遙控器生成</h2>
+    <p>請輸入資料以產生專屬書籤碼</p>
     
-    <div class="box" id="code-box">
-        </div>
+    <input type="text" id="uid" placeholder="請輸入 PTT 帳號">
+    <input type="password" id="pwd" placeholder="請輸入 PTT 密碼">
+    
+    <button onclick="generate()">產生並複製代碼</button>
+    
+    <textarea id="result" readonly placeholder="代碼會出現在這裡..."></textarea>
+    
+    <div class="note">
+        <strong>說明：</strong><br>
+        1. 輸入帳密後按下按鈕。<br>
+        2. 全選下方框框內的文字並複製。<br>
+        3. 修改手機書籤，貼上這段文字。<br>
+        <span style="color:red">* 你的密碼只會保留在產生的書籤中，不會上傳到網路。</span>
+    </div>
+</div>
 
-    <script>
-        // 設定你的 GitHub 帳號與 Repo 名稱
-        // ==========================================
-        const githubUser = 'a23644910';  // <--- 請改成你的 ID
-        const repoName = 'ptt-controller';    // <--- 你的 Repo 名稱
-        // ==========================================
+<script>
+    // ============================================
+    // 請修改這裡：填入你的 GitHub 帳號 與 Repo 名稱
+    const GITHUB_USER = '你的GitHub帳號'; 
+    const REPO_NAME = 'ptt-controller';
+    // ============================================
 
-        const scriptUrl = `https://${githubUser}.github.io/${repoName}/controller.js`;
-        
-        // 這是「載入器」程式碼，加上 timestamp 防止快取
-        const bookmarkletCode = `javascript:(function(){
-    /* ================================= */
-    /* 1. 請在這裡填入你的帳號密碼 */
-    /* ================================= */
-    var MY_ID = '你的帳號';    /* <-- 填這裡 */
-    var MY_PASS = '你的密碼';  /* <-- 填這裡 */
-    /* ================================= */
+    function generate() {
+        const id = document.getElementById('uid').value.trim();
+        const pass = document.getElementById('pwd').value;
+        const resultBox = document.getElementById('result');
 
-    var id='ptt-controller-direct';
-    var old=document.getElementById(id);
-    if(old)old.remove();
-
-    /* 建立介面 */
-    var b=document.createElement('div');
-    b.id=id;
-    b.style.cssText='position:fixed;bottom:10px;right:10px;z-index:99999;display:grid;grid-template-columns:repeat(3,65px);gap:6px;background:rgba(0,0,0,0.6);padding:8px;border-radius:12px;backdrop-filter:blur(4px);user-select:none;-webkit-user-select:none;touch-action:none;font-family:sans-serif;';
-
-    /* 核心輸入函式 */
-    function sendKey(code, key, type) {
-        /* PTT 手機版通常有一個隱藏的 textarea id="t" */
-        var target = document.querySelector('#t') || document.body;
-        target.focus(); /* 強制對焦 */
-        
-        var opts = { bubbles:true, cancelable:true, keyCode:code, which:code, key:key };
-        
-        /* 為了確保相容性，同時發送多種事件 */
-        target.dispatchEvent(new KeyboardEvent('keydown', opts));
-        if(type !== 'special') {
-             target.dispatchEvent(new KeyboardEvent('keypress', opts));
+        if(!id || !pass) {
+            alert('請輸入帳號與密碼');
+            return;
         }
-        target.dispatchEvent(new KeyboardEvent('keyup', opts));
+
+        // 產生書籤程式碼
+        // 這裡我們會加上 timestamp 防止快取
+        const jsUrl = `https://${GITHUB_USER}.github.io/${REPO_NAME}/controller.js`;
+        
+        const bookmarklet = `javascript:(function(){window.MY_PTT_ID='${id}';window.MY_PTT_PASS='${pass}';var s=document.createElement('script');s.src='${jsUrl}?t='+new Date().getTime();document.body.appendChild(s);})();`;
+
+        resultBox.value = bookmarklet;
+        
+        // 自動複製
+        resultBox.select();
+        resultBox.setSelectionRange(0, 99999); /* 手機相容 */
+        navigator.clipboard.writeText(bookmarklet).then(() => {
+            alert('已複製！請去修改書籤網址');
+        });
     }
+</script>
 
-    /* 自動打字函式 (加上延遲) */
-    async function typeString(str) {
-        var status = document.getElementById('ptt-status');
-        if(status) status.innerText = '輸入中...';
-        
-        var target = document.querySelector('#t') || document.body;
-        target.focus();
-
-        for(var i=0; i<str.length; i++) {
-            var char = str[i];
-            var code = char.charCodeAt(0);
-            sendKey(code, char, 'char');
-            await new Promise(r => setTimeout(r, 100)); /* 每個字間隔 0.1 秒 */
-        }
-        if(status) status.innerText = '';
-    }
-
-    /* 執行登入 */
-    async function doLogin() {
-        if(MY_ID === '你的帳號') { alert('請編輯書籤，填入正確的帳號密碼！'); return; }
-        
-        await typeString(MY_ID);
-        sendKey(13, 'Enter', 'special'); /* Enter */
-        
-        await new Promise(r => setTimeout(r, 1000)); /* 等待密碼欄位出現 */
-        
-        await typeString(MY_PASS);
-        sendKey(13, 'Enter', 'special'); /* Enter */
-    }
-
-    /* 按鈕設定 */
-    var keys=[
-        {t:'PgUp',k:33,s:'special'}, {t:'↑',k:38,s:'special'}, {t:'PgDn',k:34,s:'special'},
-        {t:'←',k:37,s:'special'}, {t:'OK',k:13,s:'special'}, {t:'→',k:39,s:'special'},
-        {t:'End',k:35,s:'special'}, {t:'↓',k:40,s:'special'}, {t:'離開(q)',k:81,key:'q'}
-    ];
-
-    /* 1. 建立一鍵登入按鈕 */
-    var loginBtn = document.createElement('div');
-    loginBtn.innerHTML = '⚡ <b>一鍵登入</b> <span id="ptt-status" style="font-size:12px;font-weight:normal"></span>';
-    loginBtn.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;justify-content:center;height:45px;font-size:16px;color:#fff;background:#28a745;border-radius:8px;margin-bottom:5px;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.3);';
-    loginBtn.onclick = function(e) { 
-        e.preventDefault(); e.stopPropagation(); 
-        doLogin(); 
-    };
-    b.appendChild(loginBtn);
-
-    /* 2. 建立方向鍵 */
-    keys.forEach(function(d){
-        var btn=document.createElement('div');
-        btn.innerText=d.t;
-        btn.style.cssText='display:flex;align-items:center;justify-content:center;height:50px;font-size:16px;font-weight:bold;background:rgba(255,255,255,0.95);border-radius:8px;color:#000;box-shadow:0 2px 2px rgba(0,0,0,0.2);cursor:pointer;';
-        
-        var press = function(e){
-            e.preventDefault();
-            sendKey(d.k, d.key||d.t, d.s);
-            btn.style.background='#ccc';
-            setTimeout(function(){btn.style.background='rgba(255,255,255,0.95)'}, 100);
-        };
-        btn.addEventListener('touchstart', press, {passive:false});
-        btn.addEventListener('mousedown', press, {passive:false});
-        b.appendChild(btn);
-    });
-
-    /* 3. 關閉鈕 */
-    var x=document.createElement('div');
-    x.innerHTML='❌';
-    x.style.cssText='grid-column:1/-1;text-align:center;color:#fff;padding:5px;background:rgba(255,50,50,0.8);border-radius:5px;margin-top:5px;cursor:pointer;';
-    x.onclick=function(){b.remove();};
-    b.appendChild(x);
-
-    document.body.appendChild(b);
-})();`;
-
-        document.getElementById('code-box').innerText = bookmarkletCode;
-    </script>
 </body>
 </html>
